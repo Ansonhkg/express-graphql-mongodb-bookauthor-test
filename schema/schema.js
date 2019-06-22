@@ -1,7 +1,11 @@
+// choose to use dummy data or other source
+var USE_DUMMY_DATA = true
+
 const graphql = require('graphql')
 const _ = require('lodash')
 const Book = require('../models/Book')
 const Author = require('../models/Author')
+const { books, authors } = require('./dummydata')
 
 const { 
     GraphQLObjectType, 
@@ -13,23 +17,6 @@ const {
     GraphQLNonNull,
  } = graphql
 
-
-// dummy data
-var books = [
-    { name: 'Name of the Wind',    genre: 'Fantasy', id: '1', authorId: '1'},
-    { name: 'The Final Empire',    genre: 'Fantasy', id: '2', authorId: '2'},
-    { name: 'The Long Earth',      genre: 'Sci-Fi',  id: '3', authorId: '3'},
-    { name: 'The Hero of Ages',    genre: 'Fantasy', id: '4', authorId: '2'},
-    { name: 'The Colour of Magic', genre: 'Fantasy', id: '5', authorId: '3'},
-    { name: 'The Light Fantastic', genre: 'Fantasy', id: '6', authorId: '3'},
-]
-
-var authors = [
-    { name: 'Patrick Rothfuss',  age: 44, id: '1'},
-    { name: 'Brandon Sanderson', age: 42, id: '2'},
-    { name: 'Terry Pratchett',   age: 66, id: '3'},
-]
-
 const BookType = new GraphQLObjectType({
     name: 'Book',
     fields: () =>({
@@ -39,9 +26,12 @@ const BookType = new GraphQLObjectType({
         author:{
             type: AuthorType,
             resolve(parent, args){
+
                 // Code to get data from db / other source
-                // return _.find(authors, {id : parent.authorId})
-                return Author.findById(parent.authorId)
+                return USE_DUMMY_DATA 
+                        ? _.find(authors, {id : parent.authorId}) 
+                        : Author.findById(parent.authorId)
+
             }
         }
     })
@@ -57,8 +47,9 @@ const AuthorType = new GraphQLObjectType({
             type: new GraphQLList(BookType),
             resolve(parent, args){
                 // Code to get data from db / other source
-                // return _.filter(books, {authorId: parent.id})
-                return Book.find({authorId: parent.id})
+                return USE_DUMMY_DATA 
+                ? _.filter(books, {authorId: parent.id})
+                : Book.find({authorId: parent.id})
             }
         }
     })
@@ -77,15 +68,19 @@ const RootQuery = new GraphQLObjectType({
             },
             resolve(parent, args){
                 // Code to get data from db / other source
-                // return _.find(books, {id: args.id})
-                return Book.findById(args.id)
+                return USE_DUMMY_DATA 
+                ? _.find(books, {id: args.id})
+                : Book.findById(args.id)
             }
         },
         books:{
             type: new GraphQLList(BookType),
             resolve(){
                 // return books
-                return Book.find({})
+                return USE_DUMMY_DATA 
+                ? books
+                : Book.find({})
+
             }
         },
         author:{
@@ -93,15 +88,18 @@ const RootQuery = new GraphQLObjectType({
             args:{id:{type: GraphQLID}},
             resolve(parent, args){
                 //Code to get data from db / other source
-                // return _.find(authors, {id: args.id})
-                return Author.findById(args.id)
+                return USE_DUMMY_DATA 
+                ? _.find(authors, {id: args.id})
+                : Author.findById(args.id)
             }
         },
         authors:{
             type: new GraphQLList(AuthorType),
             resolve(){
                 // return authors
-                return Author.find({})
+                return USE_DUMMY_DATA 
+                ? authors
+                : Author.find({})
             }
         }
     }
