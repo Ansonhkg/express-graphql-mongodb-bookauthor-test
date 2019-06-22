@@ -1,5 +1,5 @@
 // choose to use dummy data or other source
-var USE_DUMMY_DATA = true
+var USE_DUMMY_DATA = false
 
 const graphql = require('graphql')
 const _ = require('lodash')
